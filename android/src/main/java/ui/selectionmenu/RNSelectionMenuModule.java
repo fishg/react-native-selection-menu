@@ -60,12 +60,29 @@ public class RNSelectionMenuModule extends ReactContextBaseJavaModule {
     String searchPlaceholder = props.getString("searchPlaceholder");
     String searchTintColor = props.getString("searchTintColor");
 
-    AlertView alert = new AlertView(title, subtitle, AlertStyle.BOTTOM_SHEET);
+    //choose alert style
+    int intAlertStyle = props.hasKey("alertStyle") ? props.getInt("alertStyle") : 0;
+    AlertStyle alertStyle = AlertStyle.BOTTOM_SHEET;
+    switch (intAlertStyle){
+      case 1:
+        alertStyle = AlertStyle.DIALOG;
+        break;
+      case 2:
+        alertStyle = AlertStyle.IOS;
+        break;
+        default:
+          break;
+    }
+
+    //choose alert action style
+    ReadableArray actionStyles = props.hasKey("actionStyles") ? props.getArray("actionStyles") : null;
+
+    AlertView alert ;//= new AlertView(title, subtitle, AlertStyle.BOTTOM_SHEET);
     if (presentationType == 0 || presentationType == 1) {
       if (presentationType == 0) {
-        alert = new AlertView(title, subtitle, AlertStyle.BOTTOM_SHEET);
-      } else if (presentationType == 1) {
-        alert = new AlertView(title, subtitle, AlertStyle.DIALOG);
+        alert = new AlertView(title, subtitle, alertStyle);
+      } else {
+        alert = new AlertView(title, subtitle, alertStyle);
       }
 
       if (theme == 0) {
@@ -75,7 +92,11 @@ public class RNSelectionMenuModule extends ReactContextBaseJavaModule {
       }
 
       for (int i = 0;i < values.size();i++) {
-        alert.addAction(new AlertAction(values.getString(i), AlertActionStyle.DEFAULT, new AlertActionListener() {
+        AlertActionStyle style = AlertActionStyle.DEFAULT;
+        if(actionStyles != null && i < actionStyles.size()){
+          style = getActionStyle(actionStyles.getInt(i));
+        }
+        alert.addAction(new AlertAction(values.getString(i), style, new AlertActionListener() {
           @Override
           public void onActionClick(@NotNull AlertAction action) {
             callback.invoke(action.getTitle());
@@ -105,6 +126,19 @@ public class RNSelectionMenuModule extends ReactContextBaseJavaModule {
 
       dialog.show();
       dialog.getSearchBox().setTypeface(Typeface.SERIF);
+    }
+  }
+
+  private static AlertActionStyle getActionStyle(int actionStyle){
+    switch (actionStyle){
+      case 0:
+        return AlertActionStyle.DEFAULT;
+      case 1:
+        return AlertActionStyle.NEGATIVE;
+      case 2:
+        return AlertActionStyle.POSITIVE;
+        default:
+          return AlertActionStyle.DEFAULT;
     }
   }
 
